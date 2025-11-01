@@ -18,7 +18,10 @@ export default function Home() {
             Login
           </button>
 
-          <button className="w-64 py-6 px-8 bg-white text-blue-600 rounded-xl text-2xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200">
+          <button
+            onClick={() => navigate('/signup')}
+            className="w-64 py-6 px-8 bg-white text-blue-600 rounded-xl text-2xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
+          >
             Signup
           </button>
 
