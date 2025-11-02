@@ -1,15 +1,40 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Add Supabase authentication logic here
-    console.log('Login attempt:', { email, password });
+    setError('');
+    setLoading(true);
+
+    try {
+      const { data, error: loginError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (loginError) {
+        setError(loginError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setError('An error occurred during login');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -20,6 +45,12 @@ export default function Login() {
         </h1>
 
         <form onSubmit={handleLogin} className="space-y-8">
+          {error && (
+            <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+              {error}
+            </div>
+          )}
+
           <div>
             <label className="block text-lg font-semibold text-gray-700 mb-3">
               Email
@@ -50,9 +81,10 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full py-4 px-6 bg-blue-600 text-white rounded-lg text-2xl font-semibold shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all duration-200"
+            disabled={loading}
+            className="w-full py-4 px-6 bg-blue-600 text-white rounded-lg text-2xl font-semibold shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all duration-200 disabled:bg-blue-400 disabled:cursor-not-allowed"
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 

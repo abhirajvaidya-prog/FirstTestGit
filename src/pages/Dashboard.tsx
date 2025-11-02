@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trash2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface Task {
   id: number;
@@ -15,6 +16,19 @@ export default function Dashboard() {
     { id: 3, title: 'Buy groceries' },
   ]);
   const [newTask, setNewTask] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate('/login');
+    }
+    setLoading(false);
+  };
 
   const handleAddTask = () => {
     if (newTask.trim()) {
@@ -27,8 +41,8 @@ export default function Dashboard() {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
-  const handleLogout = () => {
-    // TODO: Add Supabase logout logic here
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     navigate('/');
   };
 
@@ -37,6 +51,14 @@ export default function Dashboard() {
       handleAddTask();
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-300 to-white flex items-center justify-center">
+        <div className="text-white text-2xl font-semibold">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-300 to-white px-4 py-8">
